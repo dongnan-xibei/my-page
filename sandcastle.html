@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>沙堡 Sandcastle</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui, sans-serif;}
+        html,body{
+            background:#000;
+            color:#fff;
+            overflow:hidden;
+            width:100vw;
+            height:100vh;
+            position:relative;
+        }
+        /* 动态GIF背景，你可以替换src为你的动态图链接 */
+        .gif-bg{
+            position:fixed;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            z-index:-2;
+        }
+        body::before{
+            content:"";
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,0.35);
+            z-index:-1;
+        }
+        /* 中间目标虚线框 */
+        .target-box{
+            position:absolute;
+            left:50%;
+            top:50%;
+            transform:translate(-50%, -50%);
+            width:140px;
+            height:160px;
+            border:1px dashed #cccccc;
+            border-radius:12px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:14px;
+            color:#ccc;
+        }
+        /* 底部价格文字 */
+        .bottom-text{
+            position:absolute;
+            bottom:160px;
+            left:50%;
+            transform:translateX(-50%);
+            text-align:center;
+        }
+        .price-text{
+            font-size:36px;
+            font-weight:bold;
+            margin-bottom:8px;
+        }
+        .title-text{
+            font-size:16px;
+            opacity:0.85;
+        }
+        /* 戒指图片容器 */
+        .ring-img{
+            position:absolute;
+            left:50%;
+            top:50%;
+            transform:translate(-50%, -50%);
+            width:120px;
+            height:120px;
+            object-fit:contain;
+            display:none;
+        }
+        /* 滑动条整体容器 */
+        .slider-wrap{
+            position:absolute;
+            bottom:40px;
+            left:50%;
+            transform:translateX(-50%);
+            width:78%;
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+        /* 刻度轨道区域 */
+        .track-wrap{
+            flex:1;
+            position:relative;
+            height:30px;
+            display:flex;
+            align-items:center;
+        }
+        .ticks{
+            width:100%;
+            height:100%;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            position:relative;
+        }
+        /* 普通细刻度 */
+        .ticks i{
+            display:block;
+            width:1px;
+            height:12px;
+            background:#fff;
+            opacity:0.35;
+        }
+        /* 节点位置刻度（加深加高） */
+        .ticks i.major{
+            height:24px;
+            opacity:1;
+            background:#ffffff;
+        }
+        /* 右侧文字 Priceless */
+        .slider-label{
+            font-size:13px;
+            letter-spacing:1px;
+            color:#fff;
+            white-space:nowrap;
+        }
+        /* 滑块：Q版小人 */
+        #slider{
+            position:absolute;
+            left:0;
+            top:50%;
+            transform:translate(-50%, -50%);
+            width:44px;
+            height:44px;
+            z-index:2;
+            pointer-events:none;
+            transition: width 0.15s ease, height 0.15s ease;
+        }
+        #slider.active{
+            width:54px;
+            height:54px;
+        }
+        #slider img{
+            width:100%;
+            height:100%;
+            object-fit:contain;
+            display:block;
+        }
+        /* 真正的拖动输入条 */
+        #real-slider{
+            position:absolute;
+            left:0;
+            top:50%;
+            transform:translateY(-50%);
+            width:100%;
+            height:30px;
+            opacity:0;
+            cursor:pointer;
+            z-index:3;
+        }
+    </style>
+</head>
+<body>
+<!-- 动态背景，换成你的gif链接 -->
+<img class="gif-bg" src="" alt="背景">
+
+<div class="target-box">放到这里</div>
+
+<div class="bottom-text">
+    <div class="price-text" id="price">¥0</div>
+    <div class="title-text" id="name">沙堡 Sandcastle</div>
+</div>
+
+<img class="ring-img" id="img1" src="https://p3-flow-image-sign.douyinpic.com/tos-cn-i-3jw0l93r3o/51f06921186c4193921252c4494c4511~tplv-3jw0l93r3o-image:0:0:1080:1920:0:0.jpeg" alt="戒指1">
+<img class="ring-img" id="img2" src="https://p3-flow-image-sign.douyinpic.com/tos-cn-i-3jw0l93r3o/51f06921186c4193921252c4494c4511~tplv-3jw0l93r3o-image:0:0:1080:1920:0:0.jpeg" alt="戒指2">
+<img class="ring-img" id="img3" src="https://p3-flow-image-sign.douyinpic.com/tos-cn-i-3jw0l93r3o/51f06921186c4193921252c4494c4511~tplv-3jw0l93r3o-image:0:0:1080:1920:0:0.jpeg" alt="戒指3">
+<img class="ring-img" id="img4" src="https://p3-flow-image-sign.douyinpic.com/tos-cn-i-3jw0l93r3o/51f06921186c4193921252c4494c4511~tplv-3jw0l93r3o-image:0:0:1080:1920:0:0.jpeg" alt="戒指4">
+<img class="ring-img" id="img5" src="https://p3-flow-image-sign.douyinpic.com/tos-cn-i-3jw0l93r3o/51f06921186c4193921252c4494c4511~tplv-3jw0l93r3o-image:0:0:1080:1920:0:0.jpeg" alt="戒指5">
+<img class="ring-img" id="img6" src="https://p3-flow-image-sign.douyinpic.com/tos-cn-i-3jw0l93r3o/51f06921186c4193921252c4494c4511~tplv-3jw0l93r3o-image:0:0:1080:1920:0:0.jpeg" alt="戒指6">
+<img class="ring-img" id="img7" src="https://p3-flow-image-sign.douyinpic.com/tos-cn-i-3jw0l93r3o/51f06921186c4193921252c4494c4511~tplv-3jw0l93r3o-image:0:0:1080:1920:0:0.jpeg" alt="戒指7">
+<img class="ring-img" id="img8" src="https://p3-flow-image-sign.douyinpic.com/tos-cn-i-3jw0l93r3o/51f06921186c4193921252c4494c4511~tplv-3jw0l93r3o-image:0:0:1080:1920:0:0.jpeg" alt="戒指8">
+<img class="ring-img" id="img9" src="https://p3-flow-image-sign.douyinpic.com/tos-cn-i-3jw0l93r3o/51f06921186c4193921252c4494c4511~tplv-3jw0l93r3o-image:0:0:1080:1920:0:0.jpeg" alt="戒指9">
+<img class="ring-img" id="img10" src="https://p3-flow-image-sign.douyinpic.com/tos-cn-i-3jw0l93r3o/51f06921186c4193921252c4494c4511~tplv-3jw0l93r3o-image:0:0:1080:1920:0:0.jpeg" alt="戒指10">
+
+<div class="slider-wrap">
+    <div class="track-wrap">
+        <div class="ticks">
+            <i class="major"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="major"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="major"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="major"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="major"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="major"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="major"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="major"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="major"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="major"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="major"></i>
+        </div>
+        <div id="slider">
+            <img src="1794883235742.png" alt="小人滑块">
+        </div>
+        <input type="range" id="real-slider" min="0" max="100" value="0" step="10">
+    </div>
+    <div class="slider-label">Priceless</div>
+</div>
+
+<script>
+    const realSlider = document.getElementById('real-slider');
+    const slider = document.getElementById('slider');
+    const priceDom = document.getElementById('price');
+    const nameDom = document.getElementById('name');
+    const img1 = document.getElementById('img1');
+    const img2 = document.getElementById('img2');
+    const img3 = document.getElementById('img3');
+    const img4 = document.getElementById('img4');
+    const img5 = document.getElementById('img5');
+    const img6 = document.getElementById('img6');
+    const img7 = document.getElementById('img7');
+    const img8 = document.getElementById('img8');
+    const img9 = document.getElementById('img9');
+    const img10 = document.getElementById('img10');
+    const trackWrap = document.querySelector('.track-wrap');
+
+    function hideAll(){
+        img1.style.display = 'none';
+        img2.style.display = 'none';
+        img3.style.display = 'none';
+        img4.style.display = 'none';
+        img5.style.display = 'none';
+        img6.style.display = 'none';
+        img7.style.display = 'none';
+        img8.style.display = 'none';
+        img9.style.display = 'none';
+        img10.style.display = 'none';
+    }
+
+    function moveSlider(){
+        const val = Number(realSlider.value);
+        const max = Number(realSlider.max);
+        const percent = val / max;
+        const trackWidth = trackWrap.clientWidth;
+        slider.style.left = (percent * trackWidth) + 'px';
+
+        hideAll();
+        switch(val){
+            case 0:
+                priceDom.innerText = '¥0';
+                nameDom.innerText = '请滑动选择款式';
+                break;
+            case 10:
+                priceDom.innerText = '¥1999';
+                nameDom.innerText = '星芒 Starlight';
+                img1.style.display = 'block';
+                break;
+            case 20:
+                priceDom.innerText = '¥3999';
+                nameDom.innerText = '雾屿 Mist';
+                img2.style.display = 'block';
+                break;
+            case 30:
+                priceDom.innerText = '¥5999';
+                nameDom.innerText = '月落 Moonfall';
+                img3.style.display = 'block';
+                break;
+            case 40:
+                priceDom.innerText = '¥7999';
+                nameDom.innerText = '朝晖 Dawn';
+                img4.style.display = 'block';
+                break;
+            case 50:
+                priceDom.innerText = '¥9999';
+                nameDom.innerText = '浅汐 Tide';
+                img5.style.display = 'block';
+                break;
+            case 60:
+                priceDom.innerText = '¥12999';
+                nameDom.innerText = '风絮 Breeze';
+                img6.style.display = 'block';
+                break;
+            case 70:
+                priceDom.innerText = '¥15999';
+                nameDom.innerText = '云垂 Cloud';
+                img7.style.display = 'block';
+                break;
+            case 80:
+                priceDom.innerText = '¥18999';
+                nameDom.innerText = '晚烬 Ember';
+                img8.style.display = 'block';
+                break;
+            case 90:
+                priceDom.innerText = '¥21999';
+                nameDom.innerText = '星河 Galaxy';
+                img9.style.display = 'block';
+                break;
+            case 100:
+                priceDom.innerText = 'Priceless';
+                nameDom.innerText = '沙堡 Sandcastle';
+                img10.style.display = 'block';
+                break;
+        }
+    }
+    realSlider.addEventListener('pointerdown', () => {
+        slider.classList.add('active');
+    });
+    window.addEventListener('pointerup', () => {
+        slider.classList.remove('active');
+    });
+    realSlider.addEventListener('input', moveSlider);
+    moveSlider();
+</script>
+
+</body>
+</html>
